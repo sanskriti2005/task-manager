@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -31,6 +32,31 @@ def get_tasks(id: int):
         if task["id"] == id:
             return {"task": task}
     return {"task": None}
+
+@app.post("/tasks")
+def create_task(task: Task):
+    new_id = max([t["id"] for t in tasks], default=0) + 1
+    new_task = {"id": new_id, "title": task.title, "description": task.description}
+    tasks.append(new_task)
+    return {"task": new_task}
+
+@app.put("/tasks/{id}")
+def update_task(id: int, updated_task: Task):
+    for task in tasks:
+        if task["id"] == id:
+            task["title"] = updated_task.title
+            task["description"] = updated_task.description
+            return {"task": task}
+    return {"error": "Task not found"}
+
+@app.delete("/tasks/{id}")
+def delete_task(id: int):
+    for i, task in enumerate(tasks):
+        if task["id"] == id:
+            deleted_task = tasks.pop(i)
+            return {"deleted": deleted_task}
+    return {"error": "Task not found"}
+
 
 
 
