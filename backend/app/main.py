@@ -52,18 +52,22 @@ app = FastAPI()
 def read_root():
     return {"message":"Hakuna matata!"}
 
+
+# gets all tasks
 @app.get("/tasks", response_model=List[TaskOut])
 def get_tasks(db: Session = Depends(get_db)):
     return db.query(Task).all()
 
-# TODO: SPATER!!
-# @app.get("/tasks/{id}")
-# def get_tasks(id: int):
-#     for task in tasks:
-#         if task["id"] == id:
-#             return {"task": task}
-#     return {"task": None}
+# returns one single specific task
+@app.get("/tasks/{id}", response_model=TaskOut)
+def get_tasks(id: int, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == id).first()
+    if task:
+        return task
+    return {"error": "Task not found"}
 
+
+# adds one task to the tasks table
 @app.post("/tasks", response_model=TaskOut)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     new_task = Task(title=task.title, description=task.description)
@@ -72,20 +76,25 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     db.refresh(new_task)
     return new_task
 
-# TODO: AUCH SPATER!!!
-# @app.put("/tasks/{id}")
-# def update_task(id: int, updated_task: Task):
-#     for task in tasks:
-#         if task["id"] == id:
-#             task["title"] = updated_task.title
-#             task["description"] = updated_task.description
-#             return {"task": task}
-#     return {"error": "Task not found"}
 
-# @app.delete("/tasks/{id}")
-# def delete_task(id: int):
-#     for i, task in enumerate(tasks):
-#         if task["id"] == id:
-#             deleted_task = tasks.pop(i)
-#             return {"deleted": deleted_task}
-#     return {"error": "Task not found"}
+# edits a task
+@app.put("/tasks/{id}", response_model=TaskOut)
+def update_task(id: int, updated_task: TaskCreate, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == id).first()
+    if task:
+        task.title = updated_task.title
+        task.description = updated_task.description
+        db.commit()
+        db.refresh(task)
+        return task
+    return {"error": "Task not found"}
+
+# deletes a task
+@app.delete("/tasks/{id}")
+def delete_task(id: int, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == id).first()
+    if task:
+        db.delete(task)
+        db.commit()
+        return {"deleted": {"id": task.id, "title": task.title, "description": task.description}}
+    return {"error": "Task not found"}
