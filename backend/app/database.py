@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-
 # The DB url
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@db:5432/taskmanager"
 

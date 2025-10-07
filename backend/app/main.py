@@ -4,6 +4,13 @@ from typing import List
 from .database import Base, engine, SessionLocal
 from .models import Task
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:5173",  # your frontend dev server
+    # you can add other origins if needed
+]
+
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine) 
@@ -33,7 +40,16 @@ class TaskOut(BaseModel):
 
 app = FastAPI()
 
-# THINGS THAT WERE JUST FOR PRACTICE, BUT IM STILL KEEPING THEM HERE SO THAT I REMEMBER WHERE I CAM FROM
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# THINGS THAT WERE JUST FOR PRACTICE, BUT IM STILL KEEPING THEM HERE SO THAT I REMEMBER WHERE I CAME FROM
 # example data 
 # tasks = [
 #     {"id": 1, "title": "Task 1", "description": "This is task 1"},
